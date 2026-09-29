@@ -225,3 +225,4 @@ papers/
 *.pdf
 
 .DS_Store
+*.pkl
