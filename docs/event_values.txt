@@ -1,0 +1,95 @@
+
+=== type ごとの件数(関係する type のみ)===
+type
+Goal Keeper    11777
+Duel           32290
+50/50            559
+
+=== goalkeeper_type ===
+goalkeeper_type
+Shot Faced               6643
+Shot Saved               2194
+Goal Conceded             914
+Collected                 876
+Punch                     538
+Keeper Sweeper            408
+Penalty Conceded           74
+Shot Saved Off Target      45
+Shot Saved to Post         27
+Smother                    25
+Save                       21
+Penalty Saved              10
+Penalty Saved to Post       1
+Saved to Post               1
+
+=== goalkeeper_outcome ===
+goalkeeper_outcome
+NaN                6643
+Success            1699
+No Touch            900
+In Play Safe        618
+In Play Danger      528
+Touched Out         523
+Claim               257
+Saved Twice         176
+Clear               151
+Touched In           88
+Punched out          71
+Collected Twice      50
+Fail                 48
+Success In Play      11
+Won                   7
+Lost In Play          6
+Lost Out              1
+
+=== goalkeeper_type × goalkeeper_outcome ===
+goalkeeper_outcome     Claim  Clear  Collected Twice  Fail  In Play Danger  In Play Safe  Lost In Play  Lost Out   NaN  No Touch  Punched out  Saved Twice  Success  Success In Play  Touched In  Touched Out  Won
+goalkeeper_type                                                                                                                                                                                                   
+Collected                  0      0               50    44               0             0             0         0     0         0            0            0      782                0           0            0    0
+Goal Conceded              0      0                0     0               0             0             0         0     0       829            0            0        0                0          85            0    0
+Keeper Sweeper           257    151                0     0               0             0             0         0     0         0            0            0        0                0           0            0    0
+Penalty Conceded           0      0                0     0               0             0             0         0     0        71            0            0        0                0           3            0    0
+Penalty Saved              0      0                0     0               4             3             0         0     0         0            0            1        0                0           0            2    0
+Penalty Saved to Post      0      0                0     0               1             0             0         0     0         0            0            0        0                0           0            0    0
+Punch                      0      0                0     4             128           335             0         0     0         0           71            0        0                0           0            0    0
+Save                       0      0                0     0               4             3             0         0     0         0            0            0        8                0           0            6    0
+Saved to Post              0      0                0     0               0             1             0         0     0         0            0            0        0                0           0            0    0
+Shot Faced                 0      0                0     0               0             0             0         0  6643         0            0            0        0                0           0            0    0
+Shot Saved                 0      0                0     0             380           271             0         0     0         0            0          172      878                0           0          493    0
+Shot Saved Off Target      0      0                0     0               1             0             0         0     0         0            0            3       31                0           0           10    0
+Shot Saved to Post         0      0                0     0              10             5             0         0     0         0            0            0        0                0           0           12    0
+Smother                    0      0                0     0               0             0             6         1     0         0            0            0        0               11           0            0    7
+
+=== duel_type ===
+duel_type
+Aerial Lost    16845
+Tackle         15445
+
+=== duel_outcome ===
+duel_outcome
+NaN                16845
+Success In Play     5062
+Won                 3750
+Lost In Play        3202
+Lost Out            2943
+Success Out          488
+
+=== duel_type × duel_outcome ===
+duel_outcome  Lost In Play  Lost Out    NaN  Success In Play  Success Out   Won
+duel_type                                                                      
+Aerial Lost              0         0  16845                0            0     0
+Tackle                3202      2943      0             5062          488  3750
+
+=== 50_50 の outcome ===
+50_50
+Lost                     282
+Success To Team          110
+Won                       87
+Success To Opposition     80
+
+=== 対象 type 以外で値が入っている行数 ===
+goalkeeper_type     : 0
+goalkeeper_outcome  : 0
+duel_type           : 0
+duel_outcome        : 0
+50_50               : 0
