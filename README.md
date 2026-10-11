@@ -18,7 +18,8 @@
 
 `scripts/` にあります。リポジトリの直下で `uv run python scripts/grid_map.py` のように実行します。
 
-- `grid_map.py`：イベントデータを取得して `data/events_2_27.pkl` に保存し、チーム別にゴールキックの到達地点をグリッドで描く（図は `figures/` に保存）
+- `fetch_events.py`：イベントデータを取得して `data/events_2_27.pkl` に保存する（最初に1回だけ実行）
+- `grid_map.py`：チーム別にゴールキックの到達地点をグリッドで描く（図は `figures/` に保存）
 - `show_columns.py`：イベントデータのカラム一覧を `outputs/columns.txt` に書き出す
 - `show_sequences.py`：ゴールキックの後のイベント列を数件、`outputs/sequences.txt` に書き出す
 
@@ -28,7 +29,11 @@
 
 ### データ
 [StatsBomb Open Data](https://github.com/statsbomb/open-data) を使用します。
-`data/` フォルダを作成し、そこに配置してください。
+最初に1回、次のコマンドでイベントデータを取得してください（`data/events_2_27.pkl` が作られます。全380試合ぶんで約1.5GBあり、取得には時間がかかります）。
+
+```
+uv run python scripts/fetch_events.py
+```
 
 
 `papers/` フォルダを作成し、PDFを配置してください。

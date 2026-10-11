@@ -1,7 +1,7 @@
 """
 キャッシュ済みの StatsBomb イベントデータのカラム一覧を outputs/columns.txt に書き出すスクリプト
 
-先に scripts/grid_map.py を実行して data/events_2_27.pkl を作っておくこと
+先に scripts/fetch_events.py を実行して data/events_2_27.pkl を作っておくこと
 一度実行すれば、以降は outputs/columns.txt を開くだけでよい
 
 実行（リポジトリの直下で）:
