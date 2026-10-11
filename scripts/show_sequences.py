@@ -4,7 +4,7 @@
 ゴールキックを 0 番として、その後の N_EVENTS イベントを味方・相手すべて含めて並べる
 結果は画面に表示し、同じ内容を outputs/sequences.txt にも保存する
 
-先に scripts/grid_map.py を実行して data/events_2_27.pkl を作っておくこと
+先に scripts/fetch_events.py を実行して data/events_2_27.pkl を作っておくこと
 
 実行（リポジトリの直下で）:
     uv run python scripts/show_sequences.py
