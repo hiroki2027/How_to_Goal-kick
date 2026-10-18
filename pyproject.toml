@@ -5,6 +5,7 @@ requires-python = ">=3.12"
 dependencies = [
     "matplotlib>=3.11.2",
     "mplsoccer>=1.8.1",
+    "napari[pyqt6]>=0.6.5",
     "numpy>=2.5.3",
     "pandas>=3.0.6",
     "statsbombpy>=1.22.0",
