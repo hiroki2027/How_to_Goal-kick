@@ -220,6 +220,9 @@ __marimo__/
 # Date (大きいファイル,生データとか)
 data/
 
+# 再生成できる分析結果
+results/*.csv
+
 # Papers/ PDFs
 papers/
 *.pdf

@@ -28,3 +28,12 @@
         - 保持/ロストの詳細説明（シュートの場合にはshotなど)
             - 決着前にハーフ終了、もしくは終了した場合はこのカラムに文字列として内容を記録
         - ロスト/保持の記録位置（自陣側をx=0として。時間判定によるロストは上記の自チームのアクションの最終位置、その他は各終了条件の位置）
+
+## 実装ファイルと実行
+
+- `modules/goal_kicks.py`：タッチ・終了条件・位置参照元を判定する。
+- `scripts/analyze_goal_kicks.py`：保存済みデータを読み込み、`results/result.csv` に保存する。
+- `modules/heatmaps.py`：着地点件数、着地点ごとの最終位置の件数・確率、欠損・除外件数を集計する。
+- `scripts/view_goal_kicks.py`：CSVを読み込み、napariの左側に着地点件数、右側に選択グリッドの最終位置確率を表示する。
+- 実行：`uv run python scripts/analyze_goal_kicks.py` → `uv run python scripts/view_goal_kicks.py`。
+- 検証：`uv run python -m unittest discover -s tests -v`。
