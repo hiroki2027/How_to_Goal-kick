@@ -56,6 +56,12 @@ def create_viewer(results, *, show=True):
     info = QLabel()
     info.setWordWrap(True)
     viewer.window.add_dock_widget(info, name="Counts and legend", area="bottom")
+    # 分布から外した結果を、最も右の専用欄で選択中・全体に分けて確認する。
+    separate = QLabel()
+    separate.setObjectName("separate_counts")
+    separate.setWordWrap(True)
+    separate.setMinimumWidth(240)
+    viewer.window.add_dock_widget(separate, name="別集計", area="right")
 
     def select_grid(g):
         values = stats["probabilities"][g]
@@ -70,6 +76,16 @@ def create_viewer(results, *, show=True):
         row, col = centers[g] - [10, 8]
         selection.data = [np.array([[row, col], [row, col + 16],
                                     [row + 20, col + 16], [row + 20, col]])]
+        separate.setText(
+            f"<h3>別集計</h3><p>選択グリッド：{g}</p>"
+            "<table cellpadding='6'><tr><th>分類</th><th>選択内</th><th>全体</th></tr>"
+            f"<tr><td>相手GK直接確保</td><td>{stats['direct_claim'][g]}件</td>"
+            f"<td>{stats['direct_claim_total']}件</td></tr>"
+            f"<tr><td>ダイレクトアウト</td><td>{stats['direct_out'][g]}件</td>"
+            f"<td>{stats['direct_out_total']}件</td></tr></table>"
+            "<p>最終位置のヒートマップと確率の分母には含めません。</p>"
+            "<p>全体件数には、着地点が欠損・範囲外のデータも含みます。</p>"
+        )
         info.setText(f"左: 着地点件数（青: 0〜{maximum}件） ↑ 攻撃方向 | "
                      "右: 固定尺度（白0 = 0% → 赤1.0 = 50%以上）。数値は実際の確率\n"
                      f"選択グリッド {g}: 総件数={stats['counts'][g]}, "

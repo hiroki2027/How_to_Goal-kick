@@ -67,8 +67,10 @@ def classify_sequence(gk, following, threshold=2.0):
     landing = (math.nan, math.nan)
     landed = False
     clock = None
-    last_own = gk
-    loss_source = gk
+    last_own = None
+    loss_source = None
+    own_touch_count = 0
+    opponent_touch_count = 0
     foul = None
     drop = None
     direct = gk.get("pass_outcome") == "Out"
@@ -92,7 +94,8 @@ def classify_sequence(gk, following, threshold=2.0):
                     reason=reason, decision_event_id=event["id"], decision_time=event["_seconds"],
                     position_event_id=source["id"], landing_x=landing[0], landing_y=landing[1],
                     landing_grid_id=location_to_grid(landing), final_x=final[0], final_y=final[1],
-                    final_grid_id=location_to_grid(final), shot=shot, penalty=penalty, own_goal=own_goal)
+                    final_grid_id=location_to_grid(final), shot=shot, penalty=penalty, own_goal=own_goal,
+                    own_touch_count=own_touch_count, opponent_touch_count=opponent_touch_count)
 
     # 対象タッチによる連続保持と、即終了するイベントを発生順に確認する。
     for event in following:
@@ -106,6 +109,13 @@ def classify_sequence(gk, following, threshold=2.0):
             if drop is None:
                 drop = event
             continue
+        # 再開のキックとGK確保は通常の対象タッチとは分けて数える。
+        touch = is_touch(event) and not is_restart(event) and not direct
+        if touch:
+            if own:
+                own_touch_count += 1
+            else:
+                opponent_touch_count += 1
         # ドロップの両チーム分の行は飛ばし、最初の接触で再開チームを判断する。
         if drop is not None and (is_touch(event) or is_claim(event)):
             if not landed:
@@ -116,7 +126,7 @@ def classify_sequence(gk, following, threshold=2.0):
             if not landed:
                 landing = position(event) if direct else fallback_landing(event)
             if direct:
-                return finish(event, "ダイレクトアウト", "direct_out")
+                return finish(event, "ダイレクトアウト", "direct_out", point=(math.nan, math.nan))
             penalty = ("won" if own else "conceded") if event.get("shot_type") == "Penalty" else ""
             return finish(event, "保持" if own else "ロスト", "restart", penalty=penalty)
         # ダイレクトアウトは次の再開位置を取得するまで待つ。
@@ -132,7 +142,17 @@ def classify_sequence(gk, following, threshold=2.0):
             return finish(event, "保持" if scored else "ロスト", "own_goal",
                           own_goal="for" if scored else "against")
         if is_claim(event):
-            return finish(event, "保持" if own else "ロスト", "goalkeeper_claim")
+            if own:
+                return finish(event, "保持", "goalkeeper_claim")
+            if own_touch_count:
+                # 相手GKの確保位置ではなく、直前の自チームのアクション終点を残す。
+                return finish(event, "ロスト", "goalkeeper_claim", source=last_own,
+                              point=coordinates(end_location(last_own)))
+            if opponent_touch_count == 0:
+                return finish(event, "相手GK直接確保", "opponent_gk_direct_claim",
+                              point=(math.nan, math.nan))
+            # 相手だけが触った後の確保は、対象タッチによるT秒判定を待つ。
+            continue
         if not is_touch(event):
             continue
         if own:
@@ -140,9 +160,11 @@ def classify_sequence(gk, following, threshold=2.0):
             last_own = event
         elif clock is None:
             clock = event["_seconds"]
-            loss_source = last_own
+            loss_source = last_own if last_own is not None else event
         elif event["_seconds"] - clock >= threshold:
-            point = coordinates(end_location(loss_source))
+            # 自チームが触れていなければ、相手の連続保持開始位置を採用する。
+            point = (coordinates(end_location(loss_source)) if last_own is not None
+                     else position(loss_source))
             return finish(event, "ロスト", "opponent_control", source=loss_source, point=point)
 
     # 次のピリオドへは持ち越さず、不完全なイベント列も理由を付けて残す。

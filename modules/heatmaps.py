@@ -14,6 +14,8 @@ def aggregate_results(results: pd.DataFrame) -> dict:
     transitions = np.zeros((30, 30), dtype=int)
     excluded = np.zeros(30, dtype=int)
     missing = np.zeros(30, dtype=int)
+    direct_out = np.zeros(30, dtype=int)
+    direct_claim = np.zeros(30, dtype=int)
     for i in range(len(results)):
         if pd.isna(landing.iloc[i]):
             continue
@@ -21,6 +23,10 @@ def aggregate_results(results: pd.DataFrame) -> dict:
         counts[g] += 1
         if results.iloc[i].result == "除外":
             excluded[g] += 1
+        elif results.iloc[i].result == "ダイレクトアウト":
+            direct_out[g] += 1
+        elif results.iloc[i].result == "相手GK直接確保":
+            direct_claim[g] += 1
         elif pd.isna(final.iloc[i]):
             missing[g] += 1
         else:
@@ -32,4 +38,7 @@ def aggregate_results(results: pd.DataFrame) -> dict:
               where=totals[:, None] > 0)
     return dict(counts=counts, transitions=transitions, probabilities=probabilities,
                 totals=totals, excluded=excluded, missing=missing,
+                direct_out=direct_out, direct_claim=direct_claim,
+                direct_out_total=int(results["result"].eq("ダイレクトアウト").sum()),
+                direct_claim_total=int(results["result"].eq("相手GK直接確保").sum()),
                 missing_landing=int(landing.isna().sum()))

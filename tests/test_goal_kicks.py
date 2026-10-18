@@ -19,12 +19,14 @@ def kick():
 
 
 class GoalKickTests(unittest.TestCase):
-    def test_first_opponent_touch_uses_kick_endpoint(self):
+    def test_first_opponent_touch_uses_opponent_start(self):
         result = classify_sequence(kick(), [event(1, 3, "B"), event(2, 5, "B")])
         self.assertEqual(result["result"], "ロスト")
         self.assertEqual(result["decision_event_id"], "2")
-        self.assertEqual(result["position_event_id"], "0")
-        self.assertEqual((result["final_x"], result["final_y"]), (50, 40))
+        self.assertEqual(result["position_event_id"], "1")
+        self.assertEqual((result["final_x"], result["final_y"]), (90, 60))
+        self.assertEqual(result["own_touch_count"], 0)
+        self.assertEqual(result["opponent_touch_count"], 2)
         self.assertEqual((result["landing_x"], result["landing_y"]), (90, 60))
 
     def test_clock_reset_and_latest_own_endpoint(self):
@@ -59,7 +61,12 @@ class GoalKickTests(unittest.TestCase):
 
     def test_claim_punch_and_fail(self):
         claim = event(1, 3, "B", "Goal Keeper", goalkeeper_type="Collected", goalkeeper_outcome="Success")
-        self.assertEqual(classify_sequence(kick(), [claim])["reason"], "goalkeeper_claim")
+        result = classify_sequence(kick(), [claim])
+        self.assertEqual(result["result"], "相手GK直接確保")
+        self.assertEqual(result["own_touch_count"], 0)
+        self.assertEqual(result["opponent_touch_count"], 0)
+        self.assertEqual(result["landing_x"], 90)
+        self.assertTrue(math.isnan(result["final_x"]))
         for outcome in ["In Play Safe", "Fail"]:
             rows = [event(1, 3, "B", "Goal Keeper", goalkeeper_type="Punch", goalkeeper_outcome=outcome),
                     event(2, 4, kind="Shot", shot_type="Open Play")]
@@ -71,11 +78,47 @@ class GoalKickTests(unittest.TestCase):
         result = classify_sequence(gk, [event(1, 8, "B", pass_type="Throw-in")])
         self.assertEqual(result["result"], "ダイレクトアウト")
         self.assertEqual(result["landing_x"], 90)
+        self.assertTrue(math.isnan(result["final_x"]))
+        self.assertEqual(result["opponent_touch_count"], 0)
         rows = [event(1, 3, kind="Referee Ball-Drop"),
                 event(2, 3, "B", "Referee Ball-Drop"), event(3, 4, "B")]
         result = classify_sequence(kick(), rows)
         self.assertEqual(result["result"], "ロスト")
         self.assertEqual(result["position_event_id"], "1")
+
+    def test_claim_after_own_touch_uses_own_endpoint(self):
+        rows = [event(1, 1, pass_end_location=[80, 25]), event(2, 2, "B"),
+                event(3, 3, kind="Carry", carry_end_location=[90, 35]),
+                event(4, 4, "B", "Goal Keeper", goalkeeper_type="Collected", goalkeeper_outcome="Success")]
+        result = classify_sequence(kick(), rows)
+        self.assertEqual(result["result"], "ロスト")
+        self.assertEqual(result["decision_event_id"], "4")
+        self.assertEqual(result["position_event_id"], "3")
+        self.assertEqual((result["final_x"], result["final_y"]), (90, 35))
+        self.assertEqual(result["own_touch_count"], 2)
+        self.assertEqual(result["opponent_touch_count"], 1)
+
+    def test_claim_missing_own_endpoint_is_not_replaced(self):
+        rows = [event(1, 1), event(2, 3, "B", "Goal Keeper", goalkeeper_type="Keeper Sweeper", goalkeeper_outcome="Claim")]
+        result = classify_sequence(kick(), rows)
+        self.assertEqual(result["result"], "ロスト")
+        self.assertTrue(math.isnan(result["final_x"]))
+
+    def test_opponent_touch_then_claim_waits_for_threshold_touch(self):
+        rows = [event(1, 1, "B"), event(2, 4, "B", "Goal Keeper", goalkeeper_type="Collected", goalkeeper_outcome="Success"),
+                event(3, 5, "B")]
+        result = classify_sequence(kick(), rows)
+        self.assertEqual(result["reason"], "opponent_control")
+        self.assertEqual(result["decision_event_id"], "3")
+        self.assertEqual(result["position_event_id"], "1")
+        self.assertEqual(result["final_x"], 90)
+        self.assertEqual(result["opponent_touch_count"], 2)
+
+    def test_own_claim_still_finishes_as_retained(self):
+        result = classify_sequence(kick(), [event(1, 2, kind="Goal Keeper", goalkeeper_type="Collected", goalkeeper_outcome="Success")])
+        self.assertEqual(result["result"], "保持")
+        self.assertEqual(result["final_x"], 30)
+        self.assertEqual(result["own_touch_count"], 0)
 
     def test_foul_landing_and_half_end(self):
         result = classify_sequence(kick(), [event(1, 2, "B", "Foul Committed"),
@@ -106,7 +149,7 @@ class GoalKickTests(unittest.TestCase):
                 dict(event(1, 6, "B"), match_id=2, period=2)]
         results = analyze_events(pd.DataFrame(rows))
         self.assertEqual(len(results), 2)
-        self.assertEqual(results.iloc[0].position_event_id, "0")
+        self.assertEqual(results.iloc[0].position_event_id, "1")
         self.assertEqual(results.iloc[1].result, "除外")
 
 
